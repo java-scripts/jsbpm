@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <title>Simple Express Static Server</title>
+  <script src="js/jquery.min.js"></script>
+  
+  
+</head>
+<body>
+  Hello World
+  
+  <table class="table" id="user_info">
+	<thead>
+		<tr>
+			<th>Id</th><th>Name</th><th>age</th><th>gender</th>
+		</tr>
+	</thead>
+	<tbody>
+		
+	</tbody>
+	
+  </table>
+  <script>
+	$(document).ready(function(){
+		console.log('getting ajax data...');
+		
+		getAllUsers();
+	})
+	
+	
+	function removeUser(id){
+		console.log('removing the user'+id);
+		$.ajax({
+			url:'/deleteUser',			
+			type:'POST',			
+			data:{id:id},
+			success:function(data){
+				console.log(data);
+				getAllUsers();
+			},
+			error:function(){
+				console.log('error')
+			}
+		});
+	}	
+	
+	function getAllUsers(){
+		$.ajax({
+			url:'/getAllUsers',
+			type:'GET',				
+			success:function(data){
+				renderTable(data);
+			},
+			error:function(){
+				console.log('error')
+			}
+		});	
+	
+	
+	}
+	
+	function AddUser(){
+		$.ajax({
+			url:'/addUser',
+			type:'POST',
+			data:{
+				id:$('#id').val(), 
+				name: $('#name').val(),
+				age: $('#age').val(),
+				gender: $('#gender').val()				
+				},
+			success:function(data){
+				console.log(data)
+				getAllUsers();
+			},
+			error:function(){
+				console.log('error')
+			}
+		});	
+	
+	}
+	
+	function renderTable(data){
+		$('#user_info tbody').empty();
+		$.each(data,function(key,row){
+					var html='';
+					html+='<tr><td>'+row.id+'</td><td>'+row.name+'</td><td>'+row.age+'</td><td>'+row.gender+'</td>';
+					html+='<td><input type="button" value="x" onclick="removeUser('+row.id+')"></td>';
+					html+='</tr>';					
+					$('#user_info tbody').append(html);
+		});
+		var html='<tr>';
+		html+='<td><input type="text" id="id"></td>';
+		html+='<td><input type="text" id="name"></td>';
+		html+='<td><input type="text" id="age"></td>';
+		html+='<td><input type="text" id="gender"></td>';
+		html+='<td><input type="button" value="+" onclick="AddUser()"></td>';
+		html+='</tr>';
+		$('#user_info tbody').append(html);
+	}
+  </script>
+</body>
+</html>
