@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8">
+<link rel="stylesheet" href="css/bootstrap.min.css" type="text/css" />
+<style>
+.fields{
+background: rgb(235, 235, 234);
+margin: 5px;
+padding: 5px;
+box-shadow: 5px 5px 5px gray;
+
+}
+</style>
+</head>
+<body>
+ <nav class=" navbar navbar-inverse">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="index.html">bpm JS </a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+           <!-- <li><a href="#">Home</a></li>           -->
+          </ul>
+		  <ul class="nav navbar-nav navbar-right">           
+            <li><a href="https://github.com/java-scripts">	View On GitHub</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+<div class="container">
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Id</th><th>Name</th><th>Fields</th>
+			</tr>
+		</thead>
+		<tbody id="formBody">
+			
+		</tbody>
+	</table>
+			
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal"  onclick=createForm('#createFormModel')>
+  CreateForm
+</button>
+
+<!-- Modal -->
+<div class="modal fade" id="createFormModel" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create Form</h4>
+      </div>
+      <div class="modal-body">
+		<div class="row">
+			<div class="col-md-8">				
+				<div class="col-md-6">
+					Name
+				</div>
+				<div class="col-md-6">
+					<input type="hidden" id="fields">
+					<input type="text" id="name">	
+				</div>				
+				<div class="col-md-12 container" id="fieldsReceiver" style="height: 300px;background: rgb(225, 225, 225);margin: 5px;padding: 5px;box-shadow: inset 5px 5px 5px rgb(174, 174, 174);">
+					
+				</div>			
+			</div>
+			<div class="col-md-4">
+				<div class="col-md-12" id="fieldsContainer" style="">
+					
+				</div>	
+			</div>
+		</div>	
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveForm()">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+	
+</div><!--container-->
+<script src="js/jquery.min.js"></script>
+
+<script src="js/jquery-ui.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/forms.js"></script>
+<script>
+renderData();		
+function renderData(){
+	RecordUtil.getAll('Form',function(data){
+		var html='';
+		$.each(data,function(i,r){
+			html+='<tr>';
+				html+='<td>'+r.id+'</td>';
+				html+='<td>'+r.name+'</td>';
+				html+='<td>'+r.fields+'</td>';
+				html+='<td><button class="btn deleteForm" key="'+r.id+'">x</button></td>';
+			html+='</tr>';
+		});			
+		$('#formBody').html(html);
+		$('.deleteForm').click(function(){
+			RecordUtil.deleteRecord('Form',{
+				id:$(this).attr('key'),
+				success:function(){
+					renderData();
+				}
+			})
+		});
+	});	
+}
+
+function createForm(model){
+	RecordUtil.getAll('Field',function(data){
+		var html='';
+		$.each(data,function(i,r){
+			html+='<div class="fields" key="'+r.id+'">'+r.name+'</div>';
+		});
+		
+		$('#fieldsContainer').html(html);
+		$('.fields').draggable({
+			revert:true
+		});
+	});
+	
+	$('#fieldsReceiver').droppable({	
+		drop:function(event, ui){
+			var xobject = ui.draggable;
+			//console.log(xobject[0]);
+			xobject.draggable("option", "revert", false);
+			$('#fieldsReceiver').append(xobject);
+			xobject.css({'left':0,'top':0});			
+			updateFields();
+		}
+	});
+	$(model).modal('show');
+}	
+
+function updateFields(){
+		fields=[];
+		$('#fieldsReceiver div').each(function(){			
+			fields.push($(this).attr('key'));			
+		});
+		$('#fields').val(fields);	
+}
+function saveForm(){
+	var form={
+		name:$('#name').val(),
+		fields:$('#fields').val(),
+	};
+	console.log(form);
+	RecordUtil.addRecord('Form',form);
+	$('#createFormModel').modal('hide');
+	renderData();
+}	
+</script>
+</body>
+</html>
